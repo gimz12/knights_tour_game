@@ -1,18 +1,18 @@
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QMessageBox
+from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QMessageBox, QInputDialog
 from PyQt5.QtGui import QColor
 import random
 from logic.knight_solver import knight_tour_warnsdorff
+from db.database import save_winner  
 
 class GameBoard(QWidget):
     def __init__(self, board_size=8, validate_func=None, finish_func=None):
         super().__init__()
         self.setWindowTitle("Play the Knight's Tour")
-        self.board_size = board_size  # Set board size dynamically
+        self.board_size = board_size
         self.grid = QGridLayout()
         self.buttons = [[QPushButton("") for _ in range(board_size)] for _ in range(board_size)]
 
-        # Create buttons and add to the grid layout
         for i in range(board_size):
             for j in range(board_size):
                 btn = self.buttons[i][j]
@@ -20,15 +20,14 @@ class GameBoard(QWidget):
                 btn.clicked.connect(lambda checked, x=i, y=j: self.handle_move(x, y))
                 self.grid.addWidget(btn, i, j)
 
-        # Add an "Auto Solve" button
         self.auto_solve_button = QPushButton("Auto Solve")
         self.auto_solve_button.clicked.connect(self.auto_solve)
         self.grid.addWidget(self.auto_solve_button, board_size, 0, 1, board_size)
 
         self.setLayout(self.grid)
-        self.reset_game()  # Set initial state
+        self.reset_game()
 
-        self.path_step = 0  # Track the current step in the solution path
+        self.path_step = 0
 
     def reset_game(self):
         self.knight_pos = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
@@ -60,8 +59,7 @@ class GameBoard(QWidget):
             self.update_ui()
 
             if len(self.path) == self.board_size * self.board_size:
-                QMessageBox.information(self, "Victory", "🎉 You completed the Knight's Tour!")
-                self.reset_game()
+                self.handle_win(manual=True)
             else:
                 self.check_game_status()
         else:
@@ -86,25 +84,30 @@ class GameBoard(QWidget):
             self.reset_game()
 
     def auto_solve(self):
-        # Use the knight's tour Warnsdorff's heuristic algorithm to find the solution
         start_x, start_y = self.knight_pos
         self.path = knight_tour_warnsdorff(start_x, start_y, self.board_size)
-        self.path_step = 0  # Reset the step tracker
+        self.path_step = 0
 
-        # Start the timer to show one move at a time
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.show_next_step)
-        self.timer.start(500)  # Set interval to 500ms (can be adjusted)
+        self.timer.start(500)
 
     def show_next_step(self):
         if self.path_step < len(self.path):
-            # Update knight position and path
             self.knight_pos = self.path[self.path_step]
             self.path_step += 1
             self.update_ui()
 
         if self.path_step == len(self.path):
-            # Stop the timer when the path is fully shown
             self.timer.stop()
-            QMessageBox.information(self, "Victory", "🎉 The Knight's Tour is completed automatically!")
-            self.reset_game()
+            self.handle_win(manual=False)
+
+    def handle_win(self, manual=True):
+        method = "Manual" if manual else "Auto-Solve"
+        name, ok = QInputDialog.getText(self, "Winner!", f"🎉 {method} completed!\nEnter your name:")
+
+        if ok and name:
+            save_winner(name, method, self.path)
+            QMessageBox.information(self, "Victory", f"🎉 Congratulations {name}! Your path has been saved.")
+        
+        self.reset_game()
