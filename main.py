@@ -2,9 +2,11 @@ import sys
 from PyQt5.QtWidgets import QApplication, QInputDialog
 from ui.main_menu import MainMenu
 from db.database import create_table
-from ui.comparison_window import ComparisonWindow  
+from ui.comparison_window import ComparisonWindow
+from ui.view_winners import ViewWinners  # Import new winners window
 
 comparison_window = None
+winners_window = None
 
 def start_game():
     from ui.game_board import GameBoard
@@ -17,12 +19,20 @@ def start_game():
 
 def compare_algorithms():
     global comparison_window
-    board_size = 6  # Board size 
+    board_size = 6  # You can customize this or ask user like start_game
     comparison_window = ComparisonWindow(board_size=board_size)
     comparison_window.show()
 
+def view_winners():
+    global winners_window
+    winners_window = ViewWinners()
+    winners_window.show()
+
 app = QApplication(sys.argv)
 create_table()
-window = MainMenu(start_game, compare_algorithms)
+
+# Pass 3 functions into MainMenu now
+window = MainMenu(start_game, compare_algorithms, view_winners)
 window.show()
+
 sys.exit(app.exec_())
