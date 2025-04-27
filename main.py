@@ -19,7 +19,7 @@ def start_game():
 
 def compare_algorithms():
     global comparison_window
-    board_size = 6  # You can customize this or ask user like start_game
+    board_size = 6  
     comparison_window = ComparisonWindow(board_size=board_size)
     comparison_window.show()
 
@@ -31,7 +31,7 @@ def view_winners():
 app = QApplication(sys.argv)
 create_table()
 
-# Pass 3 functions into MainMenu now
+
 window = MainMenu(start_game, compare_algorithms, view_winners)
 window.show()
 
