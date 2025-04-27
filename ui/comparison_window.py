@@ -5,6 +5,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import time
 import traceback
+import random
 
 from logic.knight_solver import knight_tour_backtracking, knight_tour_warnsdorff
 
@@ -23,14 +24,14 @@ class AlgorithmRunner(QRunnable):
     @pyqtSlot()
     def run(self):
         try:
-            print("[DEBUG] Starting backtracking algorithm")
+            print(f"[DEBUG] Starting backtracking algorithm from ({self.start_x}, {self.start_y})")
             t0 = time.time()
             result_bt = knight_tour_backtracking(self.start_x, self.start_y, self.board_size)
             bt_time = time.time() - t0
             success_bt = isinstance(result_bt, list) and len(result_bt) == self.board_size ** 2
             print(f"[DEBUG] Backtracking finished in {bt_time:.4f}s with success: {success_bt}")
 
-            print("[DEBUG] Starting Warnsdorff algorithm")
+            print(f"[DEBUG] Starting Warnsdorff algorithm from ({self.start_x}, {self.start_y})")
             t1 = time.time()
             result_ws = knight_tour_warnsdorff(self.start_x, self.start_y, self.board_size)
             ws_time = time.time() - t1
@@ -45,7 +46,7 @@ class AlgorithmRunner(QRunnable):
             self.signals.error.emit(traceback_str)
 
 class ComparisonWindow(QWidget):
-    def __init__(self, start_x, start_y, board_size=8):
+    def __init__(self, board_size=6):
         super().__init__()
         self.setWindowTitle("Algorithm Comparison")
         self.resize(800, 700)
@@ -57,8 +58,13 @@ class ComparisonWindow(QWidget):
 
         print("[DEBUG] Initializing ComparisonWindow")
 
+        # --- Generate random start position ---
+        self.start_x = random.randint(0, board_size - 1)
+        self.start_y = random.randint(0, board_size - 1)
+        print(f"[DEBUG] Random start position: ({self.start_x}, {self.start_y})")
+
         self.threadpool = QThreadPool()
-        self.worker = AlgorithmRunner(start_x, start_y, board_size)
+        self.worker = AlgorithmRunner(self.start_x, self.start_y, board_size)
         self.worker.signals.finished.connect(self.display_results)
         self.worker.signals.error.connect(self.display_error)
         self.threadpool.start(self.worker)
