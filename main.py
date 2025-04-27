@@ -15,10 +15,10 @@ def start_game():
 
 def compare_algorithms():
     global comparison_window
-    # pick your start coordinates and board size however you like
-    start_x, start_y, board_size = 0, 0, 8
-    comparison_window = ComparisonWindow(start_x, start_y, board_size)
+    board_size = 6  # You can change board size if you want
+    comparison_window = ComparisonWindow(board_size=board_size)
     comparison_window.show()
+
 
 app = QApplication(sys.argv)
 create_table()
