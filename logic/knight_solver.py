@@ -20,12 +20,12 @@ def knight_tour_backtracking(start_x, start_y, board_size=8):
             if is_valid(nx, ny, board, board_size):
                 board[nx][ny] = move_count
                 path.append((x, y))
-                print(f"[BT-DEBUG] Move {move_count}: ({nx}, {ny})")
+                #print(f"[BT-DEBUG] Move {move_count}: ({nx}, {ny})")
                 if solve(nx, ny, move_count + 1):
                     return True
                 board[nx][ny] = -1
                 path.pop()
-                print(f"[BT-DEBUG] Backtracking from ({nx}, {ny})")
+                #print(f"[BT-DEBUG] Backtracking from ({nx}, {ny})")
 
         return False
 
